@@ -24,8 +24,10 @@ backend/*.egg-info/
 # Env / secrets
 .env
 backend/.env
+.env.prod
 !.env.example
 !backend/.env.example
+!.env.prod.example
 
 # Editor directories and files
 .vscode/*

@@ -1,0 +1,12 @@
+# IP-only / no custom domain: serve plain HTTP on :80
+:80 {
+	encode gzip
+
+	handle /api* {
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy web:80
+	}
+}

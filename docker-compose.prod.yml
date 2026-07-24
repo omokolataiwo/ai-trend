@@ -1,0 +1,66 @@
+# Production stack for a DigitalOcean Droplet (IP access, no custom domain).
+# Uses Managed PostgreSQL via DATABASE_URL in .env.prod.
+#
+#   cp .env.prod.example .env.prod
+#   # edit .env.prod
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# Optional Ollama:
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod --profile ai up -d --build
+
+services:
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    environment:
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+    expose:
+      - "8000"
+    networks:
+      - internal
+
+  web:
+    build: .
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      - internal
+    depends_on:
+      - api
+
+  caddy:
+    image: caddy:2.9-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - internal
+    depends_on:
+      - web
+      - api
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ai"]
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    expose:
+      - "11434"
+    networks:
+      - internal
+
+networks:
+  internal:
+
+volumes:
+  caddy_data:
+  caddy_config:
+  ollama_data:

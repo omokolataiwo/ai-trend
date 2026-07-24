@@ -1,0 +1,13 @@
+# Custom domain mode with automatic HTTPS (Let's Encrypt).
+# Set DOMAIN in .env.prod, e.g. aitrends.example.com
+{$DOMAIN} {
+	encode gzip
+
+	handle /api* {
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy web:80
+	}
+}
